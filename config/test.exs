@@ -15,5 +15,5 @@ config :dev_notex, DevNotex.Repo,
   username: System.get_env("DB_USERNAME"),
   password: System.get_env("DB_PASSWORD"),
   database: "dev_notex_test",
-  hostname: "localhost",
+  hostname: System.get_env("DB_HOSTNAME"),
   pool: Ecto.Adapters.SQL.Sandbox

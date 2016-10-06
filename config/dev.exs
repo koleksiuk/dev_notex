@@ -11,8 +11,7 @@ config :dev_notex, DevNotex.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: [node: ["node_modules/brunch/bin/brunch", "watch", "--stdin",
-                    cd: Path.expand("../", __DIR__)]]
+  watchers: []
 
 
 # Watch static and templates for browser reloading.
@@ -39,5 +38,5 @@ config :dev_notex, DevNotex.Repo,
   username: System.get_env("DB_USERNAME"),
   password: System.get_env("DB_PASSWORD"),
   database: "dev_notex_dev",
-  hostname: "localhost",
+  hostname: System.get_env("DB_HOSTNAME"),
   pool_size: 10
