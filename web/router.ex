@@ -9,6 +9,10 @@ defmodule DevNotex.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :authenticated do
+    plug DevNotex.Authentication.TokenPlug, repo: DevNotex.Repo
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -18,6 +22,22 @@ defmodule DevNotex.Router do
 
     get "/", PageController, :index
   end
+
+  scope "/api" do
+    pipe_through :api
+
+    post "/session", DevNotex.SessionController, :create
+
+    post "/users", DevNotex.UsersController, :create
+  end
+
+  scope "/api" do
+    pipe_through :api
+    pipe_through :authenticated
+
+    delete "/session", DevNotex.SessionController, :delete
+  end
+
 
   # Other scopes may use custom stacks.
   # scope "/api", DevNotex do

@@ -2,6 +2,8 @@ defmodule DevNotex.User do
   use DevNotex.Web, :model
 
   schema "users" do
+    has_many :authentication_tokens, DevNotex.AuthenticationToken
+
     field :email, :string
     field :password, :string
 
