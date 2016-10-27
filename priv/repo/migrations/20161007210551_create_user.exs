@@ -3,11 +3,12 @@ defmodule DevNotex.Repo.Migrations.CreateUser do
 
   def change do
     create table(:users) do
-      add :email, :string
-      add :password, :string
+      add :email, :string, null: false
+      add :crypted_password, :string
 
       timestamps()
     end
 
+    create unique_index(:users, :email)
   end
 end

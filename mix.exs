@@ -18,8 +18,10 @@ defmodule DevNotex.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [mod: {DevNotex, []},
-     applications: [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex, :comeonin]]
+     applications: [
+       :phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger,
+       :gettext, :phoenix_ecto, :postgrex, :comeonin
+    ]]
   end
 
   # Specifies which paths to compile per environment.

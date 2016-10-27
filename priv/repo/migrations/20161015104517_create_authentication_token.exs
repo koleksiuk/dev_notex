@@ -3,8 +3,8 @@ defmodule DevNotex.Repo.Migrations.CreateAuthenticationToken do
 
   def change do
     create table(:authentication_tokens) do
-      add :token, :string
-      add :user_id, references(:users, on_delete: :nothing)
+      add :token, :string, null: false
+      add :user_id, references(:users, on_delete: :nothing), null: false
 
       timestamps()
     end

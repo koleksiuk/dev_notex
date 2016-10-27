@@ -26,7 +26,6 @@ defmodule DevNotex.Authentication.TokenPlug do
     case user_for_token(String.split(token), repo) do
       {:ok, user }     -> {:ok, user}
       {:error, reason} -> {:error, reason}
-      nil              -> {:error, "invalid token"}
     end
   end
 

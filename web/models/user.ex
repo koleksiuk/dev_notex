@@ -5,7 +5,8 @@ defmodule DevNotex.User do
     has_many :authentication_tokens, DevNotex.AuthenticationToken
 
     field :email, :string
-    field :password, :string
+    field :crypted_password, :string
+    field :password, :string, virtual: true
 
     timestamps()
   end
@@ -17,5 +18,8 @@ defmodule DevNotex.User do
     struct
     |> cast(params, [:email, :password])
     |> validate_required([:email, :password])
+    |> unique_constraint(:email)
+    |> validate_format(:email, ~r/@/)
+    |> validate_length(:password, min: 5)
   end
 end
