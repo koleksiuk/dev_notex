@@ -52,6 +52,7 @@ defmodule DevNotex.Web do
       import DevNotex.Router.Helpers
       import DevNotex.ErrorHelpers
       import DevNotex.Gettext
+      #import DevNotex.RenderJsonHelper
     end
   end
 

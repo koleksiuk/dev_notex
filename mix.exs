@@ -40,7 +40,8 @@ defmodule DevNotex.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.11"},
      {:comeonin, "~> 1.0"},
-     {:cowboy, "~> 1.0"}]
+     {:cowboy, "~> 1.0"},
+     {:secure_random, "~> 0.2"}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
