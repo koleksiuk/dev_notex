@@ -3,6 +3,8 @@ defmodule DevNotex.SessionController do
 
   import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]
 
+  require IEx
+
   alias DevNotex.AuthenticationToken, as: Token
   alias DevNotex.User
 
@@ -30,6 +32,10 @@ defmodule DevNotex.SessionController do
   end
 
   def delete(conn, _params) do
-    render conn, "delete.json", user: false
+    token = conn.assigns[:current_token]
+
+    Repo.delete(token)
+
+    render conn, "delete.json"
   end
 end

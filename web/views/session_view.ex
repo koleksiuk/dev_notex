@@ -16,4 +16,10 @@ defmodule DevNotex.SessionView do
   def render("error.json", _assigns) do
     %{errors: "failed to authenticate"}
   end
+
+  def render("delete.json", _assigns) do
+    %{
+      token: nil
+    }
+  end
 end
