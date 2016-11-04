@@ -16,7 +16,7 @@ defmodule DevNotex.User do
     |> cast(params, [:email])
     |> validate_required([:email])
     |> unique_constraint(:email)
-    |> validate_format(:email, ~r/@/)
+    |> validate_format(:email, ~r/(.+)@(.+)\.([a-z]+)/)
     |> validate_length(:email, min: 6, max: 255)
   end
 

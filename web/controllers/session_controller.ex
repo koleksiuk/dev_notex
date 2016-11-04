@@ -3,8 +3,6 @@ defmodule DevNotex.SessionController do
 
   import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]
 
-  require IEx
-
   alias DevNotex.AuthenticationToken, as: Token
   alias DevNotex.User
 

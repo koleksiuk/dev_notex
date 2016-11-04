@@ -28,7 +28,7 @@ defmodule DevNotex.Router do
 
     post "/session", DevNotex.SessionController, :create
 
-    post "/users", DevNotex.UsersController, :create
+    post "/users", DevNotex.UserController, :create
   end
 
   scope "/api" do

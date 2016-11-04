@@ -1,19 +1,25 @@
-defmodule DevNotex.UsersView do
+defmodule DevNotex.UserView do
   use DevNotex.Web, :view
 
   def render("create_error.json", %{changeset: %{changes: user, errors: errors}}) do
     %{
-      user: %{
-        email: user.email
-      },
+      data: render_one(user, __MODULE__, "user.json"),
       errors: map_errors(errors)
     }
   end
 
   def render("create.json", %{user: user}) do
     %{
-      id: user.id,
-      email: user.email
+      data: render_one(user, __MODULE__, "user.json")
+    }
+  end
+
+  def render("user.json", %{user: user}) do
+    %{
+      user: %{
+        id: Map.get(user, :id, nil),
+        email: Map.get(user, :email)
+      }
     }
   end
 
