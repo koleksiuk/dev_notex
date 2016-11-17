@@ -20,6 +20,7 @@ defmodule DevNotex.Authentication.TokenPlug do
         conn
         |> assign(:current_user, auth_token.user)
         |> assign(:current_token, auth_token)
+        |> put_private(:absinthe, %{context: %{current_user: auth_token.user}})
       {:error, message} ->
         conn
         |> send_resp(401, Poison.encode!(%{error: message}))

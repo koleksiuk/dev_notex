@@ -27,13 +27,13 @@ defmodule DevNotex.Router do
     pipe_through :api
 
     post "/session", DevNotex.SessionController, :create
-
-    post "/users", DevNotex.UserController, :create
   end
 
   scope "/api" do
     pipe_through :api
     pipe_through :authenticated
+
+    forward "/", Absinthe.Plug, schema: DevNotex.Graphql.Schema
 
     delete "/session", DevNotex.SessionController, :delete
   end
