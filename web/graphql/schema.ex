@@ -13,4 +13,15 @@ defmodule DevNotex.Graphql.Schema do
     field :id, :id
     field :email, :string
   end
+
+  mutation do
+    @desc "Create a user"
+
+    field :user, type: :user do
+      arg :email, non_null(:string)
+      arg :password, non_null(:string)
+
+      resolve &DevNotex.UserResolver.create/2
+    end
+  end
 end

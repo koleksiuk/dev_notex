@@ -25,19 +25,13 @@ defmodule DevNotex.Router do
 
   scope "/api" do
     pipe_through :api
-
-    post "/session", DevNotex.SessionController, :create
-  end
-
-  scope "/api" do
-    pipe_through :api
     pipe_through :authenticated
 
-    forward "/", Absinthe.Plug, schema: DevNotex.Graphql.Schema
-
+    post "/session", DevNotex.SessionController, :create
     delete "/session", DevNotex.SessionController, :delete
-  end
 
+    forward "/", Absinthe.Plug, schema: DevNotex.Graphql.Schema
+  end
 
   # Other scopes may use custom stacks.
   # scope "/api", DevNotex do

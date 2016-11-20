@@ -26,6 +26,12 @@ defmodule DevNotex.Web do
     end
   end
 
+  def resolver do
+    quote do
+      alias DevNotex.Repo
+    end
+  end
+
   def controller do
     quote do
       use Phoenix.Controller

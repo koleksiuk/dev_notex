@@ -21,6 +21,9 @@ defmodule DevNotex.Authentication.TokenPlug do
         |> assign(:current_user, auth_token.user)
         |> assign(:current_token, auth_token)
         |> put_private(:absinthe, %{context: %{current_user: auth_token.user}})
+      {:error, :empty} ->
+        conn
+        |> put_private(:absinthe, %{context: %{current_user: nil}})
       {:error, message} ->
         conn
         |> send_resp(401, Poison.encode!(%{error: message}))
@@ -33,6 +36,28 @@ defmodule DevNotex.Authentication.TokenPlug do
       {:ok, auth_token} -> {:ok, auth_token}
       {:error, reason}  -> {:error, reason}
     end
+  end
+
+  defp check_token([], repo) do
+    {:error, :empty}
+  end
+
+  defp get_token(["Bearer", token], repo) do
+    case get_token_with_user(repo, token) do
+      nil        -> {:error, "invalid token"}
+      auth_token ->
+        auth_token = repo.preload(auth_token, [:user])
+        {:ok, auth_token}
+    end
+  end
+
+  defp get_token(_, _repo) do
+    {:error, "invalid format of authorization"}
+  end
+
+  defp get_token_with_user(repo, token) do
+    DevNotex.AuthenticationToken
+    |> repo.get_by(token: token)
   end
 
   defp get_token(["Bearer", token], repo) do
