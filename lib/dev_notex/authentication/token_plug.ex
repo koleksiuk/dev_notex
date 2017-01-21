@@ -38,26 +38,8 @@ defmodule DevNotex.Authentication.TokenPlug do
     end
   end
 
-  defp check_token([], repo) do
+  defp check_token([], _repo) do
     {:error, :empty}
-  end
-
-  defp get_token(["Bearer", token], repo) do
-    case get_token_with_user(repo, token) do
-      nil        -> {:error, "invalid token"}
-      auth_token ->
-        auth_token = repo.preload(auth_token, [:user])
-        {:ok, auth_token}
-    end
-  end
-
-  defp get_token(_, _repo) do
-    {:error, "invalid format of authorization"}
-  end
-
-  defp get_token_with_user(repo, token) do
-    DevNotex.AuthenticationToken
-    |> repo.get_by(token: token)
   end
 
   defp get_token(["Bearer", token], repo) do

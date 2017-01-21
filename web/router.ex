@@ -15,6 +15,7 @@ defmodule DevNotex.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug CORSPlug
   end
 
   scope "/", DevNotex do
@@ -23,14 +24,18 @@ defmodule DevNotex.Router do
     get "/", PageController, :index
   end
 
-  scope "/api" do
+  scope "/api", DevNotex.Api do
+    pipe_through :api
+
+    post "/users", UserController, :create
+  end
+
+  scope "/api", DevNotex.Api  do
     pipe_through :api
     pipe_through :authenticated
 
-    post "/session", DevNotex.SessionController, :create
-    delete "/session", DevNotex.SessionController, :delete
-
-    forward "/", Absinthe.Plug, schema: DevNotex.Graphql.Schema
+    post "/session", SessionController, :create
+    delete "/session", SessionController, :delete
   end
 
   # Other scopes may use custom stacks.
