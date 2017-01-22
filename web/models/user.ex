@@ -8,6 +8,8 @@ defmodule DevNotex.User do
     field :crypted_password, :string
     field :password, :string, virtual: true
 
+    has_many :notes, DevNotex.Note
+
     timestamps()
   end
 

@@ -27,6 +27,7 @@ defmodule DevNotex.Router do
   scope "/api", DevNotex.Api do
     pipe_through :api
 
+    post "/session", SessionController, :create
     post "/users", UserController, :create
   end
 
@@ -34,12 +35,8 @@ defmodule DevNotex.Router do
     pipe_through :api
     pipe_through :authenticated
 
-    post "/session", SessionController, :create
     delete "/session", SessionController, :delete
-  end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", DevNotex do
-  #   pipe_through :api
-  # end
+    resources "/notes", NoteController, only: [:index, :show, :create, :update, :delete]
+  end
 end

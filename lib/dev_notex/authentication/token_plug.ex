@@ -20,12 +20,14 @@ defmodule DevNotex.Authentication.TokenPlug do
         conn
         |> assign(:current_user, auth_token.user)
         |> assign(:current_token, auth_token)
-        |> put_private(:absinthe, %{context: %{current_user: auth_token.user}})
       {:error, :empty} ->
         conn
-        |> put_private(:absinthe, %{context: %{current_user: nil}})
+        |> put_resp_content_type("application/json")
+        |> send_resp(401, Poison.encode!(%{error: "Authorization token is required"}))
+        |> halt
       {:error, message} ->
         conn
+        |> put_resp_content_type("application/json")
         |> send_resp(401, Poison.encode!(%{error: message}))
         |> halt
     end
