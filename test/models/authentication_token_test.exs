@@ -1,5 +1,5 @@
 defmodule DevNotex.AuthenticationTokenTest do
-  use DevNotex.ModelCase
+  use DevNotex.ModelCase, async: true
 
   alias DevNotex.AuthenticationToken
 
