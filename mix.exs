@@ -43,7 +43,8 @@ defmodule DevNotex.Mixfile do
      {:cowboy, "~> 1.0"},
      {:secure_random, "~> 0.2"},
      {:jsonapi, "~> 0.4.0"},
-     {:cors_plug, "~> 1.1"}]
+     {:cors_plug, "~> 1.1"},
+     {:ex_machina, "~> 1.0", only: :test}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.

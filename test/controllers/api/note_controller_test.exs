@@ -1,7 +1,9 @@
 defmodule DevNotex.Api.NoteControllerTest do
   use DevNotex.ConnCase
 
-  alias DevNotex.{User, AuthenticationToken, Repo}
+  import DevNotex.Factory
+
+  alias DevNotex.{Note, Repo}
 
   @valid_attrs %{ title: "My test note" }
 
@@ -24,26 +26,37 @@ defmodule DevNotex.Api.NoteControllerTest do
   describe "when user is authenticated | GET /notes" do
     setup [:authenticate_user, :create_note, :get_notes]
 
-    test " lists all notes", %{conn: conn} do
+    test "user has all created notes", %{notes: notes} do
+      assert Enum.count(notes) == 2
+    end
+
+    test "lists all notes", %{conn: conn, notes: notes} do
       resp = json_response(conn, 200)
 
       data = resp["data"]
 
       assert data
 
-      assert Enum.count(data) == 2
+      assert Enum.count(data) == Enum.count(notes)
+    end
+
+
+    test "does not list notes from other user", %{conn: conn, notes: notes} do
+      insert(:user, email: "bar@diff.com") |> with_note
+
+      resp = json_response(conn, 200)
+
+      data = resp["data"]
+
+      assert Enum.count(data) == Enum.count(notes)
+      assert Note |> Repo.aggregate(:count, :id) == Enum.count(notes) + 1
     end
   end
 
   defp authenticate_user(_context) do
-    {:ok, user} = %User{}
-                  |> User.registration_changeset(%{ email: "foo@bar.com", password: "foobar", password_confirmation: "foobar"})
-                  |> Repo.insert
+    user = insert(:user) |> with_token
 
-    {:ok, token} = %AuthenticationToken{}
-                   |> AuthenticationToken.create_changeset(%{user_id: user.id})
-                   |> Repo.insert
-
+    token = user |> assoc(:authentication_tokens) |> Repo.one
 
     conn = build_conn
            |> put_req_header("authorization", "Bearer #{token.token}")
@@ -54,13 +67,11 @@ defmodule DevNotex.Api.NoteControllerTest do
   defp create_note(context) do
     user = context[:user]
 
-    {:ok, note} = Ecto.build_assoc(user, :notes, %{ title: "Title", content: "Long content"})
-                  |> Repo.insert
+    user |> with_note |> with_note
 
-    {:ok, _note2} = Ecto.build_assoc(user, :notes, %{ title: "Title 2", content: "Long content"})
-                    |> Repo.insert
+    notes = user |> assoc(:notes) |> Repo.all
 
-    %{ note: note }
+    %{ notes: notes }
   end
 
   defp get_notes(context) do
