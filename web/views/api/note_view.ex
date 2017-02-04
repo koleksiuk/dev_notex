@@ -12,5 +12,5 @@ defmodule DevNotex.Api.NoteView do
   def fields do
     [:id, :title, :content]
   end
-  def type(), do: "note"
+  def type(), do: "notes"
 end
