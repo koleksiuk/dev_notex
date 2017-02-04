@@ -19,6 +19,7 @@ before_install:
 
 before_script:
  - docker-compose up --build -d
+ - docker-compose run app mix deps.get
  - docker-compose run -e MIX_ENV=test app mix ecto.create
  - docker-compose run -e MIX_ENV=test app mix ecto.migrate
 
