@@ -11,6 +11,8 @@ install:
   - sudo apt-get update
   - >
     sudo apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --assume-yes install docker-engine
+    # Travis enables postgres by default
+  - sudo /etc/init.d/postgresql stop
   - docker version
   # Update docker-compose via pip
   - sudo pip install docker-compose
@@ -22,7 +24,7 @@ before_script:
   - docker-compose run -e MIX_ENV=test app mix ecto.migrate
 
 script:
-  - docker-compose run app mix test
+  - docker-compose run --rm app mix test
 
 after_script:
   - docker-compose down
