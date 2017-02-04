@@ -12,7 +12,6 @@ defmodule DevNotex.AuthenticationToken do
   @required_fields ~w(user_id)
   @optional_fields ~w()
 
-
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @required_fields, @optional_fields)

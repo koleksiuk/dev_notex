@@ -1,4 +1,4 @@
-defmodule DevNotex.SessionController do
+defmodule DevNotex.Api.SessionController do
   use DevNotex.Web, :controller
 
   import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]

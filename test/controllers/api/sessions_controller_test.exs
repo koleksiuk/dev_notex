@@ -1,4 +1,4 @@
-defmodule DevNotex.SessionsControllerTest do
+defmodule DevNotex.Api.SessionsControllerTest do
   use DevNotex.ConnCase
 
   alias DevNotex.{User, AuthenticationToken, Repo}

@@ -1,9 +1,9 @@
-defmodule DevNotex.SessionView do
+defmodule DevNotex.Api.SessionView do
   use DevNotex.Web, :view
 
   def render("create.json", %{ token: token }) do
     %{
-      data: render_one(token, DevNotex.SessionView, "token.json")
+      data: render_one(token, __MODULE__, "token.json")
     }
   end
 

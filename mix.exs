@@ -20,8 +20,7 @@ defmodule DevNotex.Mixfile do
     [mod: {DevNotex, []},
      applications: [
        :phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger,
-       :gettext, :phoenix_ecto, :postgrex, :comeonin,
-       :absinthe_plug
+       :gettext, :phoenix_ecto, :postgrex, :comeonin
     ]]
   end
 
@@ -43,7 +42,9 @@ defmodule DevNotex.Mixfile do
      {:comeonin, "~> 1.0"},
      {:cowboy, "~> 1.0"},
      {:secure_random, "~> 0.2"},
-     {:absinthe_plug, "~> 1.1"}]
+     {:jsonapi, "~> 0.4.0"},
+     {:cors_plug, "~> 1.1"},
+     {:ex_machina, "~> 1.0", only: :test}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
