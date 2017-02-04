@@ -19,6 +19,22 @@ defmodule DevNotex.Api.NoteController do
     |> render("show.json", %{ note: note, conn: conn, params: params })
   end
 
+  def create(conn, %{ "data" => params }, current_user) do
+    note_changeset = Note.create_changeset(%Note{}, params)
+                     |> Ecto.Changeset.put_assoc(:user, current_user)
+
+    case Repo.insert(note_changeset) do
+      {:ok, note} ->
+        conn
+        |> put_status(:created)
+        |> render("show.json", %{ note: note, conn: conn, params: params })
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(DevNotex.Api.ChangesetView, "error.json", changeset: changeset)
+    end
+  end
+
   def action(conn, _) do
     apply(
       __MODULE__,

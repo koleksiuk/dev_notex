@@ -5,7 +5,8 @@ defmodule DevNotex.Api.NoteControllerTest do
 
   alias DevNotex.{Note, Repo}
 
-  @valid_attrs %{ title: "My test note" }
+  @valid_attributes %{"data" => %{"title" => "My note", "content" => "Long Content" } }
+  @invalid_attributes %{"data" => %{"title" => "", "content" => "Long content" }}
 
   describe "when user is not authenticated" do
     test "rejects all requests" do
@@ -13,9 +14,9 @@ defmodule DevNotex.Api.NoteControllerTest do
       Enum.each([
         get(conn, note_path(conn, :index)),
         get(conn, note_path(conn, :show, "1")),
-        post(conn, note_path(conn, :create)),
-        put(conn, note_path(conn, :update, "1")),
-        delete(conn, note_path(conn, :delete, "1"))
+        post(conn, note_path(conn, :create, @valid_attributes)),
+        put(conn, note_path(conn, :update, "1", @valid_attributes)),
+        delete(conn, note_path(conn, :delete, "1", @valid_attributes))
       ], fn conn ->
         assert json_response(conn, 401)
         assert conn.halted
@@ -23,7 +24,7 @@ defmodule DevNotex.Api.NoteControllerTest do
     end
   end
 
-  describe "when user is authenticated | GET /notes" do
+  describe "when user is authenticated | GET /api/notes" do
     setup [:authenticate_user, :create_notes, :get_notes]
 
     test "user has all created notes", %{notes: notes} do
@@ -64,7 +65,7 @@ defmodule DevNotex.Api.NoteControllerTest do
     end
   end
 
-  describe "when user is authenticated | GET /note/{id}" do
+  describe "when user is authenticated | GET /api/note/{id}" do
     setup [:authenticate_user, :create_note]
 
     test "it returns note with expected attributes if note exists", %{conn: conn, note: tested_note} do
@@ -78,7 +79,7 @@ defmodule DevNotex.Api.NoteControllerTest do
       assert resp_note["id"] == tested_note.id
     end
 
-    test "it returns not found if note exists for another user", %{conn: conn } do
+    test "it returns not found if note exists for another user", %{conn: conn} do
       other_note = insert(:user, email: "bar@diff.com")
                    |> with_note
                    |> assoc(:notes)
@@ -89,10 +90,44 @@ defmodule DevNotex.Api.NoteControllerTest do
       end
     end
 
-    test "it returns not found if note does not exist", %{conn: conn } do
+    test "it returns not found if note does not exist", %{conn: conn} do
       assert_error_sent 404, fn ->
         conn |> get(note_path(conn, :show, Ecto.UUID.generate))
       end
+    end
+  end
+
+  describe "when user is authenticated | POST /api/notes" do
+    setup [:authenticate_user]
+
+    test "it creates a note for given user when attributes are valid", %{conn: conn, user: user} do
+      conn |> post(note_path(conn, :create, @valid_attributes))
+
+      assert user |> Ecto.assoc(:notes) |> Repo.aggregate(:count, :id) == 1
+    end
+
+    test "it returns note in a response when attributes are valid", %{conn: conn} do
+      conn = conn |> post(note_path(conn, :create, @valid_attributes))
+
+      resp = json_response(conn, 201)
+
+      resp_note = resp["data"]
+
+      assert resp_note["attributes"]["title"] == "My note"
+      assert resp_note["attributes"]["content"] == "Long Content"
+      assert resp_note["id"]
+    end
+
+    test "it returns error when attributes are invalid", %{conn: conn} do
+      conn = conn |> post(note_path(conn, :create, @invalid_attributes))
+
+      errors = json_response(conn, 422)["errors"]
+
+      assert errors
+
+      %{"source" => %{"pointer" => attribute}} = Enum.at(errors, 0)
+
+      assert attribute =="/data/attributes/title"
     end
   end
 
@@ -104,7 +139,7 @@ defmodule DevNotex.Api.NoteControllerTest do
     conn = build_conn
            |> put_req_header("authorization", "Bearer #{token.token}")
 
-    %{ conn: conn, user: user, token: token }
+    %{conn: conn, user: user, token: token }
   end
 
   defp create_notes(context) do
@@ -114,7 +149,7 @@ defmodule DevNotex.Api.NoteControllerTest do
 
     notes = user |> assoc(:notes) |> Repo.all
 
-    %{ notes: notes }
+    %{notes: notes }
   end
 
   defp create_note(context) do
@@ -122,13 +157,13 @@ defmodule DevNotex.Api.NoteControllerTest do
 
     note = user |> with_note |> assoc(:notes) |> Repo.one
 
-    %{ note: note }
+    %{note: note }
   end
 
   defp get_notes(context) do
     conn = context[:conn]
     conn = conn |> get(note_path(conn, :index))
 
-    %{ conn: conn }
+    %{conn: conn}
   end
 end

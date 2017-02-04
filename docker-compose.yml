@@ -1,8 +1,15 @@
 version: '2'
 services:
-  db:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: dev_notex
+      POSTGRES_USER: dev_notex
     image: postgres
-  web:
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  app:
     build: .
     command: mix phoenix.server
     volumes:
@@ -10,4 +17,16 @@ services:
     ports:
       - "4000:4000"
     depends_on:
-      - db
+      - postgres
+    environment:
+      DB_PASSWORD: dev_notex
+      DB_USERNAME: dev_notex
+      DB_HOSTNAME: postgres
+    links:
+      - postgres
+
+volumes:
+  postgres:
+    driver: local
+  app:
+    driver: local
