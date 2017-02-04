@@ -20,6 +20,12 @@ defmodule DevNotex.Note do
     |> validate_required([:title])
   end
 
+  def update_changeset(struct, params \\ %{}) do
+    struct
+    |> cast(params, [:title, :content])
+    |> validate_required([:title])
+  end
+
   def create_changeset(struct, params \\ %{}) do
     changeset(struct, params)
   end

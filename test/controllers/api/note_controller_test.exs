@@ -5,8 +5,8 @@ defmodule DevNotex.Api.NoteControllerTest do
 
   alias DevNotex.{Note, Repo}
 
-  @valid_attributes %{"data" => %{"title" => "My note", "content" => "Long Content" } }
-  @invalid_attributes %{"data" => %{"title" => "", "content" => "Long content" }}
+  @valid_params %{"data" => %{"title" => "My note", "content" => "Long Content" } }
+  @invalid_params %{"data" => %{"title" => "", "content" => "Long content" }}
 
   describe "when user is not authenticated" do
     test "rejects all requests" do
@@ -14,9 +14,9 @@ defmodule DevNotex.Api.NoteControllerTest do
       Enum.each([
         get(conn, note_path(conn, :index)),
         get(conn, note_path(conn, :show, "1")),
-        post(conn, note_path(conn, :create, @valid_attributes)),
-        put(conn, note_path(conn, :update, "1", @valid_attributes)),
-        delete(conn, note_path(conn, :delete, "1", @valid_attributes))
+        post(conn, note_path(conn, :create, @valid_params)),
+        put(conn, note_path(conn, :update, "1", @valid_params)),
+        delete(conn, note_path(conn, :delete, "1", @valid_params))
       ], fn conn ->
         assert json_response(conn, 401)
         assert conn.halted
@@ -65,7 +65,7 @@ defmodule DevNotex.Api.NoteControllerTest do
     end
   end
 
-  describe "when user is authenticated | GET /api/note/{id}" do
+  describe "when user is authenticated | GET /api/notes/{id}" do
     setup [:authenticate_user, :create_note]
 
     test "it returns note with expected attributes if note exists", %{conn: conn, note: tested_note} do
@@ -101,13 +101,18 @@ defmodule DevNotex.Api.NoteControllerTest do
     setup [:authenticate_user]
 
     test "it creates a note for given user when attributes are valid", %{conn: conn, user: user} do
-      conn |> post(note_path(conn, :create, @valid_attributes))
+      conn |> post(note_path(conn, :create, @valid_params))
+
+      note = user |> Ecto.assoc(:notes) |> Repo.one
+
+      assert note.title == @valid_params["data"]["title"]
+      assert note.content == @valid_params["data"]["content"]
 
       assert user |> Ecto.assoc(:notes) |> Repo.aggregate(:count, :id) == 1
     end
 
     test "it returns note in a response when attributes are valid", %{conn: conn} do
-      conn = conn |> post(note_path(conn, :create, @valid_attributes))
+      conn = conn |> post(note_path(conn, :create, @valid_params))
 
       resp = json_response(conn, 201)
 
@@ -119,7 +124,7 @@ defmodule DevNotex.Api.NoteControllerTest do
     end
 
     test "it returns error when attributes are invalid", %{conn: conn} do
-      conn = conn |> post(note_path(conn, :create, @invalid_attributes))
+      conn = conn |> post(note_path(conn, :create, @invalid_params))
 
       errors = json_response(conn, 422)["errors"]
 
@@ -128,6 +133,105 @@ defmodule DevNotex.Api.NoteControllerTest do
       %{"source" => %{"pointer" => attribute}} = Enum.at(errors, 0)
 
       assert attribute =="/data/attributes/title"
+    end
+  end
+
+  describe "when user is authenticated | PUT /api/notes/{id}" do
+    setup [:authenticate_user, :create_note]
+
+    test "it updates a note for given user when attributes are valid", %{conn: conn, note: note} do
+      conn |> put(note_path(conn, :update, note.id, @valid_params))
+
+      updated_note = Repo.get!(Note, note.id)
+
+      assert updated_note.title == @valid_params["data"]["title"]
+      assert updated_note.content == @valid_params["data"]["content"]
+    end
+
+    test "it returns note in a response when attributes are valid", %{conn: conn, note: note} do
+      conn = conn |> put(note_path(conn, :update, note.id, @valid_params))
+
+      resp = json_response(conn, 200)
+
+      resp_note = resp["data"]
+
+      assert resp_note["attributes"]["title"] == "My note"
+      assert resp_note["attributes"]["content"] == "Long Content"
+      assert resp_note["id"]
+      assert Repo.get(Note, resp_note["id"])
+    end
+
+    test "it updates a note for when some attributes are given", %{conn: conn, note: note} do
+      params = %{"data" => %{"content" => "New content"}}
+      conn |> put(note_path(conn, :update, note.id, params))
+
+      updated_note = Repo.get!(Note, note.id)
+
+      assert updated_note.title == note.title
+      assert updated_note.content == "New content"
+    end
+
+    test "it returns error when attributes are invalid", %{conn: conn, note: note} do
+      conn = conn |> put(note_path(conn, :update, note.id, @invalid_params))
+
+      errors = json_response(conn, 422)["errors"]
+
+      assert errors
+
+      %{"source" => %{"pointer" => attribute}} = Enum.at(errors, 0)
+
+      assert attribute =="/data/attributes/title"
+    end
+
+    test "it returns not found if note exists for another user", %{conn: conn} do
+      other_note = insert(:user, email: "bar@diff.com")
+                   |> with_note
+                   |> assoc(:notes)
+                   |> Repo.one
+
+      assert_error_sent 404, fn ->
+        conn |> put(note_path(conn, :update, other_note.id, @valid_params))
+      end
+    end
+
+    test "it returns not found if note does not exist", %{conn: conn} do
+      assert_error_sent 404, fn ->
+        conn |> put(note_path(conn, :update, Ecto.UUID.generate, @valid_params))
+      end
+    end
+  end
+
+  describe "when user is authenticated | DELETE /api/notes/{id}" do
+    setup [:authenticate_user, :create_note]
+
+    test "it deletes a note", %{conn: conn, note: note} do
+      conn |> delete(note_path(conn, :delete, note.id))
+
+      assert Repo.get(Note, note.id) == nil
+    end
+
+    test "returns empty response", %{conn: conn, note: note} do
+      conn = conn |> delete(note_path(conn, :delete, note.id))
+
+      resp = response(conn, 204)
+      assert resp == ""
+    end
+
+    test "it returns not found if note exists for another user", %{conn: conn} do
+      other_note = insert(:user, email: "bar@diff.com")
+                   |> with_note
+                   |> assoc(:notes)
+                   |> Repo.one
+
+      assert_error_sent 404, fn ->
+        conn |> delete(note_path(conn, :delete, other_note.id))
+      end
+    end
+
+    test "it returns not found if note does not exist", %{conn: conn} do
+      assert_error_sent 404, fn ->
+        conn |> delete(note_path(conn, :delete, Ecto.UUID.generate))
+      end
     end
   end
 
